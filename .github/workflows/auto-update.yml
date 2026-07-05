@@ -1,0 +1,59 @@
+name: Auto Update Upstream
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Run daily at midnight
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  check-and-rebase:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.PAT }}
+
+      - name: Setup Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Fetch Upstream Tags
+        run: |
+          git remote add upstream https://github.com/Moulberry/PandoraLauncher.git
+          git fetch upstream --tags
+
+      - name: Check for new tags and Rebase
+        run: |
+          # Find the latest tag from upstream
+          LATEST_UPSTREAM_TAG=$(git ls-remote --tags --refs upstream | grep -o 'refs/tags/v.*' | sed 's/refs\/tags\///' | sort -V | tail -n1)
+
+          if [ -z "$LATEST_UPSTREAM_TAG" ]; then
+            echo "No tags found in upstream."
+            exit 0
+          fi
+
+          # Check if we already have this tag locally
+          if git rev-parse "$LATEST_UPSTREAM_TAG" >/dev/null 2>&1; then
+            echo "Already up to date with $LATEST_UPSTREAM_TAG"
+            exit 0
+          fi
+
+          echo "New tag found: $LATEST_UPSTREAM_TAG"
+
+          # Ensure we are on master
+          git checkout master
+
+          # Rebase our branch on top of the new upstream tag
+          git rebase $LATEST_UPSTREAM_TAG
+
+          # Create the new tag
+          git tag $LATEST_UPSTREAM_TAG
+
+          git push --force origin master
+          git push origin $LATEST_UPSTREAM_TAG

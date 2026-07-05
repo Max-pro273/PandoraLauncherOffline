@@ -9,17 +9,21 @@ fi
 version=${1#v}
 export PANDORA_RELEASE_VERSION=$version
 
-sudo apt-get update --yes && sudo apt-get install --yes libssl-dev libdbus-1-dev libx11-xcb1 libxkbcommon-x11-dev pkg-config libseccomp-dev libfontconfig-dev
+sudo apt-get update --yes && sudo apt-get install --yes libssl-dev libdbus-1-dev libx11-xcb1 libxkbcommon-x11-dev pkg-config libseccomp-dev libfontconfig-dev fakeroot alien
 cargo build --release --frozen --target x86_64-unknown-linux-gnu
 strip target/x86_64-unknown-linux-gnu/release/pandora_launcher
 mkdir -p dist
 mv target/x86_64-unknown-linux-gnu/release/pandora_launcher dist/PandoraLauncher-Linux-x86_64
 
 cargo install cargo-packager
+
+# Prevent AppImage linuxdeploy from failing when stripping modern libraries
+export NO_STRIP=1
+
 env -u CARGO_PACKAGER_SIGN_PRIVATE_KEY cargo packager --config '{'\
 '  "name": "pandora-launcher",'\
 '  "outDir": "./dist",'\
-'  "formats": ["deb", "appimage"],'\
+'  "formats": ["deb", "appimage", "pacman"],'\
 '  "productName": "Pandora Launcher",'\
 '  "version": "'"$version"'",'\
 '  "identifier": "com.moulberry.pandoralauncher",'\
@@ -28,6 +32,16 @@ env -u CARGO_PACKAGER_SIGN_PRIVATE_KEY cargo packager --config '{'\
 '  "binaries": [{ "path": "PandoraLauncher-Linux-x86_64", "main": true }],'\
 '  "icons": ["package/windows_icons/icon_16x16.png", "package/windows_icons/icon_32x32.png", "package/windows_icons/icon_48x48.png", "package/windows_icons/icon_256x256.png"]'\
 '}'
+
+# Generate RPM from DEB using alien
+sudo alien -r dist/*.deb
+mv *.rpm dist/
+
+# Rename packages to clean names without version numbers
+mv dist/*.deb dist/PandoraLauncher-Linux-x86_64.deb 2>/dev/null || true
+mv dist/*.rpm dist/PandoraLauncher-Linux-x86_64.rpm 2>/dev/null || true
+mv dist/*.pacman dist/PandoraLauncher-Linux-x86_64.pacman 2>/dev/null || true
+mv dist/*.pkg.tar.zst dist/PandoraLauncher-Linux-x86_64.pacman 2>/dev/null || true
 
 mv -f dist/PandoraLauncher-Linux-x86_64 dist/PandoraLauncher-Linux-x86_64-Portable
 mv -f 'dist/PandoraLauncher-Linux-x86_64_'$version'_x86_64.AppImage' dist/PandoraLauncher-Linux-x86_64.AppImage
