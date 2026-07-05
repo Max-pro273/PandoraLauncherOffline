@@ -9,7 +9,7 @@ fi
 version=${1#v}
 export PANDORA_RELEASE_VERSION=$version
 
-sudo apt-get update --yes && sudo apt-get install --yes libssl-dev libdbus-1-dev libx11-xcb1 libxkbcommon-x11-dev pkg-config libseccomp-dev libfontconfig-dev fakeroot alien
+sudo apt-get update --yes && sudo apt-get install --yes libssl-dev libdbus-1-dev libx11-xcb1 libxkbcommon-x11-dev pkg-config libseccomp-dev libfontconfig-dev fakeroot rpm
 cargo build --release --frozen --target x86_64-unknown-linux-gnu
 strip target/x86_64-unknown-linux-gnu/release/pandora_launcher
 mkdir -p dist
@@ -33,9 +33,10 @@ env -u CARGO_PACKAGER_SIGN_PRIVATE_KEY cargo packager --config '{'\
 '  "icons": ["package/windows_icons/icon_16x16.png", "package/windows_icons/icon_32x32.png", "package/windows_icons/icon_48x48.png", "package/windows_icons/icon_256x256.png"]'\
 '}'
 
-# Generate RPM from DEB using alien
-sudo alien -r dist/*.deb
-mv *.rpm dist/
+# Generate RPM from DEB using fpm to prevent /usr/bin conflicts in Fedora
+sudo apt-get install --yes ruby ruby-dev build-essential
+sudo gem install --no-document fpm
+fpm -s deb -t rpm --force -p dist/ dist/*.deb
 
 # Rename packages to clean names without version numbers
 mv dist/*.deb dist/PandoraLauncher-Linux-x86_64.deb 2>/dev/null || true
