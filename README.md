@@ -1,41 +1,76 @@
-# Pandora Launcher
+# Pandora Launcher (Offline Edition)
 
-Work in progress
+[Pandora Launcher](https://github.com/Moulberry/PandoraLauncher) is one of the best Minecraft launchers written in Rust, packed with incredibly cool features. Check out the original repository for all the details!
 
-## Features
-- (Optional) sandboxing, to prevent mods from harming your system
-- Cross-instance file syncing (options, saves, etc.) (https://youtu.be/wb5EY2VsMKg)
-- Mod deduplication when installed through launcher (using reflinks or hard links)
-- Secure account credential management using platform keyrings
-- Uncapped live game log output
-- Content browser providing mods from Modrinth and CurseForge
-- Unique approach to modpack management (https://youtu.be/cdRVqd7b2BQ)
-- Native application (no Electron/Tauri)
-- No third-party metadata servers (no downtime, no delay when MC updates)
-- Automatic redaction of sensitive information (i.e. access tokens) in logs
+I got tired of dealing with questionable Russian forks just to play offline. I wanted something clean, fast, and honest.
 
-## FAQ
+So I made this fork. 
 
-### Discord Server
+It is a fully automated, transparent offline version. The entire "crack" is literally just removing 4 lines of code that force a Microsoft account login in UI. That's it :)
 
-https://pandora.moulberry.com/discord
+---
 
-### Where can I suggest a feature/report a bug?
+## Downloads & Installation
 
-Please use GitHub issues.
+You can always find the latest automatically built files on the [Releases](https://github.com/Max-pro273/PandoraLauncherOffline/releases/latest) page. Just copy and paste these commands to install (make sure to replace the filenames with the exact ones from the latest release):
 
-### Why should I use Pandora over other launchers?
+### Linux
+**Debian / Ubuntu** (`.deb`):
+```bash
+wget https://github.com/Max-pro273/PandoraLauncherOffline/releases/latest/download/PandoraLauncher-Linux-x86_64.deb
+sudo apt install ./PandoraLauncher-Linux-x86_64.deb
+```
 
-1. If you like one of the features above
-2. If you like the general design/ux of the launcher, personally I find it very easy to use
-3. The launcher is designed to be performant, from storage space to cpu and memory usage
+**Fedora / RHEL** (`.rpm`):
+```bash
+sudo dnf install https://github.com/Max-pro273/PandoraLauncherOffline/releases/latest/download/PandoraLauncher-Linux-x86_64.rpm
+```
 
-### Will Pandora be monetized?
+**Arch Linux** (`.pacman`):
+```bash
+sudo pacman -U https://github.com/Max-pro273/PandoraLauncherOffline/releases/latest/download/PandoraLauncher-Linux-x86_64.pacman
+```
 
-Unlikely, for a few reasons:
-- I believe that it is wrong for launchers to be monetized without distributing revenue back to mod creators that give the launcher value in the first place. Since I don't have the infrastructure to be able to redistribute revenue to mod creators, this is a big barrier.
-- Dealing with monetization takes a lot of (ongoing) work, probably more work than creating the launcher itself.
-- I personally dislike advertisements.
+**Universal** (`.AppImage`): 
+```bash
+wget https://github.com/Max-pro273/PandoraLauncherOffline/releases/latest/download/PandoraLauncher-Linux-x86_64.AppImage
+chmod +x PandoraLauncher-Linux-x86_64.AppImage
+./PandoraLauncher-Linux-x86_64.AppImage
+```
 
-## Instance Page
-![Instance Page](https://raw.githubusercontent.com/Moulberry/PandoraLauncher/refs/heads/master/screenshots/instance.png)
+### Windows
+Download the `-Setup.exe` or `-Portable.exe` directly from the [Releases](https://github.com/Max-pro273/PandoraLauncherOffline/releases/latest) page.
+
+### macOS
+Download the `.dmg` or portable version directly from the [Releases](https://github.com/Max-pro273/PandoraLauncherOffline/releases/latest) page.
+
+## Usage for Original Launcher (Offline Bypass)
+
+If you prefer to use the **unmodified original launcher**, you can still unlock the offline feature by manually injecting a placeholder account file.
+
+Download the original launcher, run it, **close the launcher**, then execute the appropriate command for your os:
+
+**Windows CMD:**
+```cmd
+echo {"accounts": {"00000000-0000-0000-0000-000000000000": {"username": "OfflinePlayer","offline": true,"head": null}},"selected_account": "00000000-0000-0000-0000-000000000000"} > %appdata%\PandoraLauncher\accounts.json
+```
+
+**Windows PowerShell:**
+```powershell
+'{"accounts": {"00000000-0000-0000-0000-000000000000": {"username": "OfflinePlayer", "offline": true, "head": null}}, "selected_account": "00000000-0000-0000-0000-000000000000"}' | Out-File -FilePath "$env:APPDATA\PandoraLauncher\accounts.json" -Encoding utf8 -Force
+```
+
+**Linux Shell:**
+```bash
+echo '{"accounts": {"00000000-0000-0000-0000-000000000000": {"username": "OfflinePlayer","offline": true,"head": null}},"selected_account": "00000000-0000-0000-0000-000000000000"}' > ~/.local/share/PandoraLauncher/accounts.json
+```
+
+**macOS:**
+```bash
+echo '{"accounts": {"00000000-0000-0000-0000-000000000000": {"username": "OfflinePlayer","offline": true,"head": null}},"selected_account": "00000000-0000-0000-0000-000000000000"}' > ~/Library/Application\ Support/PandoraLauncher/accounts.json
+```
+
+## ❤️ Credits
+Huge thanks to [Moulberry](https://github.com/Moulberry) for creating the amazing original Pandora Launcher. All credit for the core launcher belongs to them.
+
+*Made in Ukraine 🇺🇦*
