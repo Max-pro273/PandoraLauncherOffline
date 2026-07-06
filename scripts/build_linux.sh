@@ -23,7 +23,7 @@ export NO_STRIP=1
 env -u CARGO_PACKAGER_SIGN_PRIVATE_KEY cargo packager --config '{'\
 '  "name": "pandora-launcher",'\
 '  "outDir": "./dist",'\
-'  "formats": ["deb", "appimage", "pacman"],'\
+'  "formats": ["deb", "appimage"],'\
 '  "productName": "Pandora Launcher",'\
 '  "version": "'"$version"'",'\
 '  "identifier": "com.moulberry.pandoralauncher",'\
@@ -33,10 +33,11 @@ env -u CARGO_PACKAGER_SIGN_PRIVATE_KEY cargo packager --config '{'\
 '  "icons": ["package/windows_icons/icon_16x16.png", "package/windows_icons/icon_32x32.png", "package/windows_icons/icon_48x48.png", "package/windows_icons/icon_256x256.png"]'\
 '}'
 
-# Generate RPM from DEB using fpm to prevent /usr/bin conflicts in Fedora
-sudo apt-get install --yes ruby ruby-dev build-essential
+# Generate RPM and Pacman from DEB using fpm
+sudo apt-get install --yes ruby ruby-dev build-essential libarchive-tools
 sudo gem install --no-document fpm
 fpm -s deb -t rpm --force -p dist/ dist/*.deb
+fpm -s deb -t pacman --force -p dist/ dist/*.deb
 
 # Rename packages to clean names without version numbers
 mv dist/*.deb dist/PandoraLauncher-Linux-x86_64.deb 2>/dev/null || true
