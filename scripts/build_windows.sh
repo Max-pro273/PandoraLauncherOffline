@@ -40,7 +40,7 @@ if [[ -n "$CARGO_PACKAGER_SIGN_PRIVATE_KEY" ]]; then
     \"downloads\": {
         \"x86_64\": {
             \"executable\": {
-                \"download\": \"https://github.com/Moulberry/PandoraLauncher/releases/download/v$version/PandoraLauncher-Windows-x86_64-Portable.exe\",
+                \"download\": \"https://github.com/Max-pro273/PandoraLauncherOffline/releases/download/v$version/PandoraLauncher-Windows-x86_64-Portable.exe\",
                 \"size\": $(wc -c < dist/PandoraLauncher-Windows-x86_64-Portable.exe),
                 \"sha1\": \"$(sha1sum dist/PandoraLauncher-Windows-x86_64-Portable.exe | cut -d ' ' -f 1)\",
                 \"sig\": \"$(cat dist/PandoraLauncher-Windows-x86_64-Portable.exe.sig)\"

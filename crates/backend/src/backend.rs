@@ -60,9 +60,9 @@ fn build_http_clients(user_agent: &str, proxy_config: &ProxyConfig, proxy_passwo
 
 pub fn start(runtime: tokio::runtime::Runtime, launcher_dir: PathBuf, send: FrontendHandle, self_handle: BackendHandle, recv: BackendReceiver, quit_handler: QuitCoordinator) {
     let user_agent = if let Some(version) = option_env!("PANDORA_RELEASE_VERSION") {
-        format!("PandoraLauncher/{version} (https://github.com/Moulberry/PandoraLauncher)")
+        format!("PandoraLauncher/{version} (https://github.com/Max-pro273/PandoraLauncherOffline)")
     } else {
-        "PandoraLauncher/dev (https://github.com/Moulberry/PandoraLauncher)".to_string()
+        "PandoraLauncher/dev (https://github.com/Max-pro273/PandoraLauncherOffline)".to_string()
     };
 
     let directories = Arc::new(LauncherDirectories::new(launcher_dir));

@@ -28,7 +28,7 @@ sudo dnf install https://github.com/Max-pro273/PandoraLauncherOffline/releases/l
 
 **Arch Linux** (`.pacman`):
 ```bash
-sudo pacman -U https://github.com/Max-pro273/PandoraLauncherOffline/releases/latest/download/PandoraLauncher-Linux-x86_64.pacman
+sudo pacman -U https://github.com/Max-pro273/PandoraLauncherOffline/releases/latest/download/PandoraLauncher-Linux-x86_64.pacman --config <(echo -e "[options]\nRemoteFileSigLevel = Optional")
 ```
 
 **Universal** (`.AppImage`): 

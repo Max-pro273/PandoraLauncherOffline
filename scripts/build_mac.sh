@@ -49,13 +49,13 @@ if [[ -n "$CARGO_PACKAGER_SIGN_PRIVATE_KEY" ]]; then
     \"downloads\": {
         \"universal\": {
             \"executable\": {
-                \"download\": \"https://github.com/Moulberry/PandoraLauncher/releases/download/v$version/PandoraLauncher-macOS-Universal-Portable\",
+                \"download\": \"https://github.com/Max-pro273/PandoraLauncherOffline/releases/download/v$version/PandoraLauncher-macOS-Universal-Portable\",
                 \"size\": $(wc -c < dist/PandoraLauncher-macOS-Universal-Portable),
                 \"sha1\": \"$(sha1sum dist/PandoraLauncher-macOS-Universal-Portable | cut -d ' ' -f 1)\",
                 \"sig\": \"$(cat dist/PandoraLauncher-macOS-Universal-Portable.sig)\"
             },
             \"app\": {
-                \"download\": \"https://github.com/Moulberry/PandoraLauncher/releases/download/v$version/PandoraLauncher.app.tar.gz\",
+                \"download\": \"https://github.com/Max-pro273/PandoraLauncherOffline/releases/download/v$version/PandoraLauncher.app.tar.gz\",
                 \"size\": $(wc -c < dist/PandoraLauncher.app.tar.gz),
                 \"sha1\": \"$(sha1sum dist/PandoraLauncher.app.tar.gz | cut -d ' ' -f 1)\",
                 \"sig\": \"$(cat dist/PandoraLauncher.app.tar.gz.sig)\"
