@@ -273,7 +273,7 @@ fn open_from_entity(
         },
         FrontendMetadataResult::Error(message) => {
             window.open_dialog(cx, move |modal, _, _| {
-                modal.title(title.clone()).child(ErrorAlert::new(t::instance::content::requesting_from_modrinth_error().into(), message.clone()))
+                modal.title(title.clone()).child(ErrorAlert::new(t::instance::content::requesting_from_error("Modrinth").into(), message.clone()))
             });
         },
     }
@@ -451,7 +451,7 @@ impl InstallDialog {
 
                     let mut hash = [0u8; 20];
                     let Ok(_) = hex::decode_to_slice(&*install_file.hashes.sha1, &mut hash) else {
-                        let warning = format!("File {} has invalid sha1: {}", install_file.filename, install_file.hashes.sha1);
+                        let warning = t::instance::content::install::file_invalid_sha1(&install_file.filename, &install_file.hashes.sha1);
                         window.push_notification((NotificationType::Error, SharedString::new(warning)), cx);
                         return;
                     };
@@ -508,7 +508,9 @@ impl InstallDialog {
                             .w_full()
                             .gap_0p5()
                             .child(
-                                Select::new(instances).placeholder(t::instance::none_selected()).title_prefix(format!("{}: ", t::instance::label())),
+                                Select::new(instances).placeholder(t::instance::none_selected())
+                                    .title_prefix(format!("{}: ", t::instance::label()))
+                                    .search_placeholder(t::common::search()),
                             )
                             .when(self.unsupported_instances > 0, |content| {
                                 content.child(t::instance::incompatible(self.unsupported_instances))
@@ -578,6 +580,7 @@ impl InstallDialog {
         Select::new(select_state)
             .disabled(self.fixed_minecraft_version.is_some())
             .title_prefix(format!("{}: ", t::instance::game_version()))
+            .search_placeholder(t::common::search())
             .into_any_element()
     }
 
@@ -743,7 +746,9 @@ impl InstallDialog {
             ModrinthProjectType::Other => format!("{}: ", t::instance::content::version::file()),
         };
 
-        Select::new(mod_version_select_state).title_prefix(mod_version_prefix).into_any_element()
+        Select::new(mod_version_select_state).title_prefix(mod_version_prefix)
+            .search_placeholder(t::common::search())
+            .into_any_element()
     }
 }
 

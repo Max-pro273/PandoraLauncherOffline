@@ -74,7 +74,7 @@ impl PageType {
                     t::curseforge::name().into()
                 }
             },
-            PageType::Import => "Import".into(),
+            PageType::Import => t::import::label().into(),
             PageType::Syncing => t::instance::sync::label().into(),
             PageType::ModrinthProject { project_title, .. } => project_title.clone(),
             PageType::InstancePage { name } => {
@@ -432,8 +432,8 @@ impl Render for LauncherUI {
                     launcher.switch_page(PageType::Curseforge { installing_for: None }, &[], window, cx);
                 })));
 
-        let files_group = MenuGroup::new("Files")
-            .child(MenuGroupItem::new("Import")
+        let files_group = MenuGroup::new(t::instance::sync::files())
+            .child(MenuGroupItem::new(t::import::label())
                 .active(page_type == PageType::Import)
                 .on_click(cx.listener(|launcher, _, window, cx| {
                     launcher.switch_page(PageType::Import, &[], window, cx);
@@ -539,11 +539,29 @@ impl Render for LauncherUI {
             })
             .child(PandoraIcon::Bug)
             .tooltip(move |window, cx| {
-                Tooltip::new("Report a bug").build(window, cx)
+                Tooltip::new(t::system::report_bug()).build(window, cx)
             })
             .on_click({
                 move |_, window, cx| {
                     open_bug_report_url(window, cx);
+                }
+            });
+        let discord_invite = option_env!("DISCORD_INVITE").unwrap_or("https://pandora.moulberry.com/discord");
+        let discord_button = div()
+            .id("discord-button")
+            .p_2()
+            .rounded(cx.theme().radius)
+            .hover(|this| {
+                this.bg(cx.theme().sidebar_accent)
+                    .text_color(cx.theme().sidebar_accent_foreground)
+            })
+            .child(PandoraIcon::Discord)
+            .tooltip(move |window, cx| {
+                Tooltip::new(t::system::join_discord()).build(window, cx)
+            })
+            .on_click({
+                move |_, _, cx| {
+                    cx.open_url(discord_invite);
                 }
             });
 
@@ -557,7 +575,10 @@ impl Render for LauncherUI {
             .text_size(rems(0.9375))
             .child(Icon::new(PandoraIcon::Pandora).size_8().min_w_8().min_h_8())
             .child(t::common::app_name());
-        let footer_buttons = h_flex().child(settings_button).child(bug_report_button);
+        let footer_buttons = h_flex()
+            .child(settings_button)
+            .child(bug_report_button)
+            .when(!discord_invite.is_empty(), |this| this.child(discord_button));
         let footer = v_flex().pb_2().px_2().items_center().min_w_full().max_w_full().w_full().child(footer_buttons).child(account_button);
         let sidebar = v_flex()
             .size_full()

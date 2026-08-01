@@ -10,7 +10,7 @@ use command::PandoraArg;
 use command::{PandoraChild, PandoraCommand, PandoraSandbox};
 use futures::{FutureExt, TryFutureExt};
 use rand::seq::SliceRandom;
-use rc_zip_sync::{ArchiveHandle, ReadZip};
+use rc_zip_sync::{ArchiveHandle, ReadZip, rc_zip::EntryKind};
 use regex::Regex;
 use rustc_hash::FxHashMap;
 use schema::{
@@ -591,6 +591,10 @@ impl Launcher {
 
         // Extract files in maven/ into libraries, used in 1.16 and below
         for entry in installer_zip.entries() {
+            if entry.kind() != EntryKind::File {
+                continue;
+            }
+
             if let Some(path) = entry.name.strip_prefix("maven/") {
                 // dir entries (e.g. "maven/.../1.20.1-47.4.20/") would otherwise
                 // get write_safe'd as a 0-byte file, blocking the real jar's parent dir (ENOTDIR)

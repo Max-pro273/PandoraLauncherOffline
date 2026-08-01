@@ -3,6 +3,7 @@ use std::{path::Path, sync::Arc};
 use bridge::{handle::BackendHandle, message::{BackendConfigWithPassword, MessageToBackend}};
 use gpui::{prelude::FluentBuilder, *};
 use gpui_component::{
+    IndexPath,
     button::{Button, ButtonVariants},
     checkbox::Checkbox,
     h_flex,
@@ -15,7 +16,12 @@ use gpui_component::{
 };
 use schema::backend_config::{BackendConfig, ProxyConfig, ProxyProtocol};
 
-use crate::{entity::DataEntities, icon::PandoraIcon, interface_config::InterfaceConfig};
+use crate::{
+    component::named_dropdown::{NamedDropdown, NamedDropdownItem},
+    entity::DataEntities,
+    icon::PandoraIcon,
+    interface_config::InterfaceConfig,
+};
 
 #[derive(Clone, Copy, PartialEq, Eq, Default)]
 enum SettingsTab {
@@ -26,6 +32,7 @@ enum SettingsTab {
 
 struct Settings {
     selected_tab: SettingsTab,
+    language_select: Entity<SelectState<NamedDropdown<t::Language>>>,
     theme_folder: Arc<Path>,
     theme_select: Entity<SelectState<SearchableVec<SharedString>>>,
     backend_handle: BackendHandle,
@@ -46,6 +53,17 @@ struct Settings {
 pub fn build_settings_sheet(data: &DataEntities, window: &mut Window, cx: &mut App) -> impl Fn(Sheet, &mut Window, &mut App) -> Sheet + 'static {
     let theme_folder = data.theme_folder.clone();
     let settings = cx.new(|cx| {
+        let language_select = cx.new(|cx| {
+            let lang_options = Settings::build_language_options();
+            let lang = &InterfaceConfig::get(cx).language;
+            let selected_index = lang_options.iter()
+                .position(|item| item.item == *lang)
+                .map(IndexPath::new);
+            SelectState::new(NamedDropdown::new(lang_options), selected_index, window, cx)
+        });
+
+        cx.subscribe_in(&language_select, window, Settings::on_language_changed).detach();
+
         let theme_select_delegate = SearchableVec::new(ThemeRegistry::global(cx).sorted_themes()
             .iter().map(|cfg| cfg.name.clone()).collect::<Vec<_>>());
 
@@ -87,6 +105,7 @@ pub fn build_settings_sheet(data: &DataEntities, window: &mut Window, cx: &mut A
 
         let mut settings = Settings {
             selected_tab: SettingsTab::Interface,
+            language_select,
             theme_folder,
             theme_select,
             backend_handle: data.backend_handle.clone(),
@@ -269,6 +288,46 @@ impl Settings {
         self.proxy_password_changed = false;
     }
 
+    fn build_language_options() -> Vec<NamedDropdownItem<t::Language>> {
+        std::iter::once(NamedDropdownItem {
+            name: t::settings::language::system().into(),
+            item: t::Language::System,
+        }).chain(t::languages().iter().map(|&(code, name)| NamedDropdownItem {
+            name: name.into(),
+            item: t::Language::Code(code.to_string()),
+        }))
+        .collect()
+    }
+
+    fn on_language_changed(
+        &mut self,
+        _state: &Entity<SelectState<NamedDropdown<t::Language>>>,
+        event: &SelectEvent<NamedDropdown<t::Language>>,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
+        let SelectEvent::Confirm(_) = event;
+        let Some(lang_item) = self.language_select.read(cx).selected_value().cloned() else {
+            return;
+        };
+        let lang = lang_item.item;
+        t::set_lang(&lang);
+
+        let lang_options = Self::build_language_options();
+        let selected_index = lang_options.iter()
+            .position(|option| option.item == lang)
+            .map(IndexPath::new);
+
+        InterfaceConfig::get_mut(cx).language = lang;
+
+        self.language_select.update(cx, |select, cx| {
+            select.set_items(NamedDropdown::new(lang_options), window, cx);
+            select.set_selected_index(selected_index, window, cx);
+        });
+
+        cx.notify();
+    }
+
     fn render_interface_tab(&mut self, _window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let interface_config = InterfaceConfig::get(cx);
 
@@ -277,8 +336,12 @@ impl Settings {
             .py_3()
             .gap_3()
             .child(crate::labelled(
+                t::settings::language::title(),
+                Select::new(&self.language_select)
+            ))
+            .child(crate::labelled(
                 t::settings::theme::title(),
-                Select::new(&self.theme_select)
+                Select::new(&self.theme_select).search_placeholder(t::common::search())
             ))
             .child(Button::new("open-theme-folder").info().icon(PandoraIcon::FolderOpen).label(t::settings::theme::open_folder()).on_click({
                 let theme_folder = self.theme_folder.clone();
