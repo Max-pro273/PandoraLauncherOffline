@@ -31,24 +31,29 @@ jobs:
       - name: Check for new tags and Rebase
         run: |
           LATEST_UPSTREAM_TAG=$(git ls-remote --tags --refs upstream | grep -o 'refs/tags/v.*' | sed 's/refs\/tags\///' | sort -V | tail -n1)
+          if [ -z "$LATEST_UPSTREAM_TAG" ]; then exit 0; fi
 
-          if [ -z "$LATEST_UPSTREAM_TAG" ]; then
-            echo "No tags found in upstream."
-            exit 0
-          fi
-
-          echo "Latest upstream tag is: $LATEST_UPSTREAM_TAG"
           git checkout master
-
-          if git merge-base --is-ancestor "$LATEST_UPSTREAM_TAG" HEAD; then
-            echo "Branch is already rebased on top of $LATEST_UPSTREAM_TAG"
-            exit 0
-          fi
-
+          if git merge-base --is-ancestor "$LATEST_UPSTREAM_TAG" HEAD; then exit 0; fi
           echo "Rebasing onto $LATEST_UPSTREAM_TAG"
+          
+          set +e
           git rebase $LATEST_UPSTREAM_TAG
-          
+
+          while [ -d ".git/rebase-merge" ]; do
+            git checkout --theirs README.md || true
+            git add README.md || true
+            
+            GIT_EDITOR=true git rebase --continue
+            
+            if [ $? -ne 0 ]; then
+                echo "ERROR: A conflict was found in the code"
+                exit 1
+            fi
+          done
+
+          set -e
+
           git tag --force $LATEST_UPSTREAM_TAG
-          
           git push --force origin master
           git push --force origin $LATEST_UPSTREAM_TAG
